@@ -1,0 +1,69 @@
+from math import radians, sin, cos, sqrt, atan2
+
+# Haversine formula to calculate the distance between two points on the Earth
+def haversine(lon1, lat1, lon2, lat2):
+    R = 6371.0  # Radius of the Earth in kilometers
+
+    dlon = radians(lon2 - lon1)
+    dlat = radians(lat2 - lat1)
+
+    a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+    return distance
+
+# Function to calculate the perpendicular distance from a point to a line segment
+def point_to_segment_distance(px, py, x1, y1, x2, y2):
+    # Convert coordinates to radians
+    px, py, x1, y1, x2, y2 = map(radians, [px, py, x1, y1, x2, y2])
+    
+    # Convert latitude and longitude to Cartesian coordinates
+    R = 6371.0  # Radius of the Earth in kilometers
+    p = [cos(py) * cos(px), cos(py) * sin(px), sin(py)]
+    v1 = [cos(y1) * cos(x1), cos(y1) * sin(x1), sin(y1)]
+    v2 = [cos(y2) * cos(x2), cos(y2) * sin(x2), sin(y2)]
+    
+    # Calculate the vector projections
+    v1_p = [p[i] - v1[i] for i in range(3)]
+    v1_v2 = [v2[i] - v1[i] for i in range(3)]
+    dot_v1_v2 = sum(v1[i] * v1_v2[i] for i in range(3))
+    dot_v1_p = sum(v1[i] * v1_p[i] for i in range(3))
+    
+    t = dot_v1_p / dot_v1_v2 if dot_v1_v2 != 0 else 0
+    t = max(0, min(1, t))
+    
+    # Calculate the closest point on the line segment
+    closest = [v1[i] + t * v1_v2[i] for i in range(3)]
+    
+    # Calculate the distance from the point to the closest point
+    distance = sqrt(sum((p[i] - closest[i]) ** 2 for i in range(3))) * R
+    return distance
+
+# Function to find the minimum distance from a point to the edges of a polygon
+def min_distance_to_polygon_edges(polygon, point):
+    min_distance = float('inf')
+    n = len(polygon[0])
+    for i in range(n):
+        x1, y1 = polygon[0][i]
+        x2, y2 = polygon[0][(i + 1) % n]
+        distance = point_to_segment_distance(point[0], point[1], x1, y1, x2, y2)
+        if distance < min_distance:
+            min_distance = distance
+    return min_distance
+
+# Define the polygon and the point
+polygon = [
+    [
+        [-72.281059, 42.927402],
+        [-72.2810805, 42.9259644],
+        [-72.2782588, 42.925823],
+        [-72.2782588, 42.9274177],
+        [-72.2810912, 42.9273942]
+    ]
+]
+point = [-72.2761452, 42.9287846]
+
+# Calculate the minimum distance
+min_distance = min_distance_to_polygon_edges(polygon, point)
+print(f"The distance from the point to the closest edge of the polygon is {min_distance:.2f} kilometers.")
