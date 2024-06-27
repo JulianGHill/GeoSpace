@@ -1,0 +1,22 @@
+import folium
+from folium.plugins import HeatMap
+
+# Sample data points
+data_points = [
+    [-72.2814667, 42.9273235], [-72.2815678, 42.9274236], [-72.2816689, 42.9275237],
+    # ... (you would list out all 100 points here)
+]
+
+# Create a map centered around the average latitude and longitude of the points
+avg_lat = sum(point[1] for point in data_points) / len(data_points)
+avg_lon = sum(point[0] for point in data_points) / len(data_points)
+
+m = folium.Map(location=[avg_lat, avg_lon], zoom_start=10)
+
+# Add the heatmap
+HeatMap(data_points).add_to(m)
+
+# Save the map to an HTML file
+m.save("heatmap.html")
+
+m
