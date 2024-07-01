@@ -1,0 +1,40 @@
+import pandas as pd
+import numpy as np
+from ipyleaflet import Map, Heatmap, TileLayer
+
+# Step 1: Generate random latitude and longitude points
+num_points = 100
+lats = np.random.uniform(low=-90.0, high=90.0, size=num_points)
+lons = np.random.uniform(low=-180.0, high=180.0, size=num_points)
+
+# Create a DataFrame
+data = {'latitude': lats, 'longitude': lons}
+df = pd.DataFrame(data)
+
+# Save to a CSV file
+df.to_csv('data.csv', index=False)
+
+# Step 2: Create the heatmap using ipyleaflet
+# Load your data
+df = pd.read_csv('data.csv')
+
+# Create a list of locations for the heatmap
+locations = df[['latitude', 'longitude']].values.tolist()
+
+# Create a map centered around the mean latitude and longitude
+center = [0, 0]  # Centering at (0, 0) for a global view
+m = Map(center=center, zoom=2)
+
+# Add custom tile layer
+tile_layer = TileLayer(
+    url='http://localhost:8000/{z}/{x}/{y}.png',
+    attribution='Local Map'
+)
+m.add_layer(tile_layer)
+
+# Create and add the heatmap layer
+heatmap = Heatmap(locations=locations, radius=20, blur=15)
+m.add_layer(heatmap)
+
+# Display the map
+m
